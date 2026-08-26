@@ -55,6 +55,11 @@ int main(int argc, char *argv[])
             return 5;
         }
     }
+    else if(ret == e_help)
+    {
+        printf("Usage : For Encoding: ./a.out -e beautiful.bmp secret.txt [stegno.bmp]\n");
+        printf("      : For Decoding: ./a.out -d stegno.bmp [decode.txt]\n");
+    }
     else
     {
         printf("Error : Unsupported type\n");
@@ -70,6 +75,8 @@ OperationType check_operation_type(char *argv[])
         return e_encode;
     else if(strcmp(argv[1],"-d")==0)
         return e_decode;
+    else if(strcmp(argv[1],"-h")==0 || strcmp(argv[1],"--help")==0)
+        return e_help;
     else   
         return e_unsupported;
 }

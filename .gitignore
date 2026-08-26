@@ -1,0 +1,104 @@
+# ==========================================
+# Prerequisites & Dependency Tracking
+# ==========================================
+*.d
+
+# ==========================================
+# Compiled Object Files
+# ==========================================
+*.slo
+*.lo
+*.o
+*.obj
+
+# ==========================================
+# Precompiled Headers
+# ==========================================
+*.gch
+*.pch
+
+# ==========================================
+# Linker & Debugger Files
+# ==========================================
+*.ilk
+*.pdb
+*.dwo
+*.idb
+
+# ==========================================
+# Compiled Dynamic Libraries
+# ==========================================
+*.so
+*.so.*
+*.dylib
+*.dll
+
+# ==========================================
+# Compiled Static Libraries
+# ==========================================
+*.lai
+*.la
+*.a
+*.lib
+
+# ==========================================
+# Executables & Output Files
+# ==========================================
+*.exe
+*.out
+*.app
+a.out
+
+# ==========================================
+# Common Build Directories
+# ==========================================
+[Bb]uild/
+[Bb]in/
+[Oo]bj/
+build-*/
+out/
+
+# ==========================================
+# CMake Generated Files
+# ==========================================
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+install_manifest.txt
+compile_commands.json
+
+# ==========================================
+# C++ Package Managers (vcpkg / Conan)
+# ==========================================
+vcpkg_installed/
+conan/
+
+# ==========================================
+# IDEs & Text Editors (Optional but Recommended)
+# ==========================================
+# VS Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# CLion / JetBrains
+.idea/
+
+# Xcode
+*.xcodeproj/*
+!*.xcodeproj/project.pbxproj
+*.xcworkspace/
+
+# Temporary files
+*.tmp
+*.log
+*.bak
+*.swp
+.cache/

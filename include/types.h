@@ -15,6 +15,7 @@ typedef enum
 {
     e_encode,
     e_decode,
+    e_help,
     e_unsupported
 } OperationType;
 
