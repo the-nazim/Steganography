@@ -1,6 +1,7 @@
 #ifndef DECODE_H
 #define DECODE_H
 
+#include <stdio.h>
 #include "types.h"
 
 #define MAX_SECRET_BUF_SIZE 1

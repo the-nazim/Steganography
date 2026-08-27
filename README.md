@@ -68,23 +68,27 @@ Show Help:     ./steganography -h | --help
 
 ### Terminal User Interface (TUI)
 
+Two TUI options are available:
+
+#### Option 1: C++ FTXUI TUI (Recommended)
+
 ```bash
+# Auto-builds if not compiled yet
 ./stegano_tui.sh
 ```
 
-A colorful interactive menu that guides you through encoding and decoding:
+A native C++ interactive terminal UI built with [FTXUI](https://github.com/jusonleung/FTXUI). Features:
+- Animated transitions and spinner animations
+- File browser with directory navigation
+- Real-time input validation
+- Color-coded status messages
+- Spinner animation during encode/decode operations
+
+#### Option 2: Bash TUI (Fallback)
+
+If the C++ TUI binary is not available, the launcher script falls back to a bash-based menu:
 
 ```
-╔══════════════════════════════════════════════════════╗
-║        ░█████╗░██╗░░░██╗████████╗███████╗           ║
-║        ██╔══██╗██║░░░██║╚══██╔══╝██╔════╝           ║
-║        ██║░░╚═╝██║░░░██║░░░██║░░░█████╗░░           ║
-║        ██║░░██╗██║░░░██║░░░██║░░░██╔══╝░░           ║
-║        ╚█████╔╝╚██████╔╝░░░██║░░░███████╗           ║
-║        ░╚════╝░░╚═════╝░░░░╚═╝░░░╚══════╝           ║
-║          Terminal User Interface                      ║
-╚══════════════════════════════════════════════════════╝
-
   [1] 🔒 Encode  - Hide data in an image
   [2] 🔓 Decode  - Extract hidden data
   [3] 📖 Help    - Usage guide & examples
@@ -139,40 +143,48 @@ When secret data is larger than the image's LSB capacity:
 
 ```
 Steganography/
-├── CMakeLists.txt          # Build configuration
-├── README.md               # This file
-├── stegano_tui.sh          # Interactive terminal UI
+├── CMakeLists.txt              # Build configuration (C + C++ with FTXUI)
+├── README.md                   # This file
+├── stegano_tui.sh              # Bash TUI launcher script
 ├── include/
-│   ├── common.h            # Magic string definition
-│   ├── types.h             # Custom types (Status, OperationType)
-│   ├── encode.h            # Encoding structures and prototypes
-│   └── decode.h            # Decoding structures and prototypes
+│   ├── common.h                # Magic string definition
+│   ├── types.h                 # Custom types (Status, OperationType)
+│   ├── encode.h                # Encoding structures and prototypes
+│   ├── decode.h                # Decoding structures and prototypes
+│   └── stegano_wrapper.h       # C wrapper for C++ TUI integration
 ├── src/
-│   ├── main.c              # Entry point and argument parsing
-│   ├── encode.c            # Encoding logic (LSB embedding)
-│   └── decode.c            # Decoding logic (LSB extraction)
-└── build/                  # Build output (generated)
-    └── steganography       # Compiled binary
+│   ├── main.c                  # CLI entry point and argument parsing
+│   ├── encode.c                # Encoding logic (LSB embedding)
+│   ├── decode.c                # Decoding logic (LSB extraction)
+│   ├── stegano_wrapper.c       # C wrapper implementation
+│   └── tui.cpp                 # FTXUI-based interactive TUI (C++)
+└── build/                      # Build output (generated)
+    ├── steganography           # CLI binary
+    └── stegano_tui             # Interactive TUI binary
 ```
 
 ## 🛠️ Build Requirements
 
 - **C compiler** (GCC recommended)
-- **CMake** 3.10 or higher
+- **C++ compiler** with C++17 support (GCC 8+ / Clang 7+)
+- **CMake** 3.14 or higher
 - **Linux/macOS** (Windows with WSL or MinGW)
+- **FTXUI** — fetched automatically via CMake (no manual install needed)
 
 ### Install Dependencies
 
 ```bash
 # Ubuntu/Debian
-sudo apt install gcc cmake
+sudo apt install gcc g++ cmake
 
 # macOS (with Homebrew)
-brew install cmake
+brew install gcc cmake
 
 # Fedora/RHEL
-sudo dnf install gcc cmake
+sudo dnf install gcc gcc-c++ cmake
 ```
+
+> **Note**: The FTXUI library is downloaded automatically during the CMake build step via `FetchContent`. No manual installation is required.
 
 ## 📋 Examples
 
@@ -239,4 +251,4 @@ This project is for educational purposes. Use responsibly.
 
 ---
 
-**Made with ❤️ using LSB Steganography**
+**Made with ❤️ using LSB Steganography and FTXUI**
