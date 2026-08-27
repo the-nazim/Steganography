@@ -22,6 +22,8 @@ typedef struct _EncodeInfo
     uint image_capacity;
     uint bits_per_pixel;
     char image_data[MAX_IMAGE_BUF_SIZE];
+    int is_bmp;
+    int header_size;
 
     /* Secret File Info */
     char *secret_fname;
@@ -29,6 +31,10 @@ typedef struct _EncodeInfo
     char extn_secret_file[MAX_FILE_SUFFIX];
     char secret_data[MAX_SECRET_BUF_SIZE];
     long size_secret_file;
+
+    /* Message mode */
+    int message_mode;
+    char *secret_message;
 
     /* Stego Image Info */
     char *stego_image_fname;

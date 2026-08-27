@@ -19,6 +19,15 @@ typedef struct _DecodeInfo
     char extn_secret_file[MAX_FILE_SUFFIX];
     long size_secret_file;
 
+    /* Terminal output mode */
+    int terminal_mode;
+
+    /* Image type info */
+    int is_bmp;
+    int header_size;
+    uint lsb_capacity;
+    uint file_size;
+
     /* Decoded data */
     char image_data[MAX_IMAGE_BUF_SIZE];
 } DecodeInfo;

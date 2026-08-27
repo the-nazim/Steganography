@@ -57,14 +57,18 @@ int main(int argc, char *argv[])
     }
     else if(ret == e_help)
     {
-        printf("Usage : For Encoding: ./a.out -e beautiful.bmp secret.txt [stegno.bmp]\n");
-        printf("      : For Decoding: ./a.out -d stegno.bmp [decode.txt]\n");
+        printf("Usage : For Encoding : ./a.out -e image.bmp secret.txt [stegno.bmp]\n");
+        printf("      : For Message  : ./a.out -e image.bmp -m \"message\" [stegno.bmp]\n");
+        printf("      : For Decoding : ./a.out -d stegno.bmp [decode.txt]\n");
+        printf("      : Note: Accepts any image type (bmp, png, jpg, etc.)\n");
     }
     else
     {
         printf("Error : Unsupported type\n");
-        printf("Usage : For Encoding: ./a.out -e beautiful.bmp secret.txt [stegno.bmp]\n");
-        printf("      : For Decoding: ./a.out -d stegno.bmp [decode.txt]\n");
+        printf("Usage : For Encoding : ./a.out -e image.bmp secret.txt [stegno.bmp]\n");
+        printf("      : For Message  : ./a.out -e image.bmp -m \"message\" [stegno.bmp]\n");
+        printf("      : For Decoding : ./a.out -d stegno.bmp [decode.txt]\n");
+        printf("      : Note: Accepts any image type (bmp, png, jpg, etc.)\n");
     }
     return 0;
 }
