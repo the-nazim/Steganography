@@ -4,10 +4,11 @@ A C-based steganography tool that hides secret files or messages inside image fi
 
 ## ✨ Features
 
-- **Hide files** inside images (any format: BMP, PNG, JPG, etc.)
+- **Hide any file** inside images — documents, audio, video, crypto keys, and more
 - **Hide messages** directly via command line (`-m` flag)
 - **Extract hidden data** to file or print to terminal
-- **Any image type** accepted — no format restrictions
+- **File Info inspection** — check if an image contains hidden data and view metadata
+- **Any image type** accepted as carrier — no format restrictions
 - **Overflow handling** — if secret data exceeds image capacity, the file grows without affecting the image display
 - **Interactive TUI** — colorful terminal menu for easy use
 - **Magic string verification** — detects whether an image contains hidden data
@@ -83,15 +84,18 @@ A native C++ interactive terminal UI built with [FTXUI](https://github.com/juson
 - Real-time input validation
 - Color-coded status messages
 - Spinner animation during encode/decode operations
+- **File Info page** — inspect stego images for hidden data and view metadata
+- **Supported file types display** — see all supported formats at a glance
 
 #### Option 2: Bash TUI (Fallback)
 
 If the C++ TUI binary is not available, the launcher script falls back to a bash-based menu:
 
 ```
-  [1] 🔒 Encode  - Hide data in an image
-  [2] 🔓 Decode  - Extract hidden data
-  [3] 📖 Help    - Usage guide & examples
+  [1] 🔒 Encode    - Hide data in an image
+  [2] 🔓 Decode    - Extract hidden data
+  [3] 🔍 File Info - Inspect stego image
+  [4] 📖 Help      - Usage guide & examples
   [0] 🚪 Exit
 ```
 
@@ -227,6 +231,8 @@ cat recovered.txt
 
 ## 🧪 Supported Formats
 
+### Carrier Image Types (best to worst)
+
 | Format | Support | Notes |
 |--------|---------|-------|
 | **BMP** | ✅ Full | Best support — image displays normally even with overflow |
@@ -238,12 +244,25 @@ cat recovered.txt
 
 > **Note**: BMP files provide the best experience because the image displays normally even when overflow data is appended. Other formats may show artifacts if the data significantly modifies the file.
 
+### Secret File Types
+
+Any file can be hidden inside an image:
+
+| Category | Supported Formats |
+|----------|-------------------|
+| **Documents** | PDF, DOC, DOCX, XLS, XLSX, TXT, CSV, JSON, XML |
+| **Audio** | MP3, WAV, FLAC, AAC, OGG |
+| **Images** | JPG, PNG, GIF, BMP, SVG, TIFF |
+| **Video** | MP4, AVI, MKV |
+| **Archives** | ZIP, TAR, GZ |
+| **Crypto Keys** | PEM, KEY, P12, PFX |
+| **Source Code** | PY, JS, C, CPP, and any other text/binary file |
+
 ## ⚠️ Limitations
 
 - **BMP recommended** — best compatibility and image quality
 - **Not加密** — this is steganography (hiding), not encryption (scrambling). The data is hidden, not encrypted.
 - **Single file** — can only hide one file per image
-- **Text files only** — currently supports `.txt` file extension for encoded files
 
 ## 📜 License
 

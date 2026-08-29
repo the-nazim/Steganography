@@ -57,18 +57,20 @@ int main(int argc, char *argv[])
     }
     else if(ret == e_help)
     {
-        printf("Usage : For Encoding : ./a.out -e image.bmp secret.txt [stegno.bmp]\n");
+        printf("Usage : For Encoding : ./a.out -e image.bmp secret_file [stegno.bmp]\n");
         printf("      : For Message  : ./a.out -e image.bmp -m \"message\" [stegno.bmp]\n");
-        printf("      : For Decoding : ./a.out -d stegno.bmp [decode.txt]\n");
-        printf("      : Note: Accepts any image type (bmp, png, jpg, etc.)\n");
+        printf("      : For Decoding : ./a.out -d stegno.bmp [output_file]\n");
+        printf("      : Secret file types: PDF, DOC, MP3, JPG, PNG, MP4, ZIP, PEM, etc.\n");
+        printf("      : Carrier image types: BMP (best), PNG, JPG, GIF, TIFF, etc.\n");
     }
     else
     {
         printf("Error : Unsupported type\n");
-        printf("Usage : For Encoding : ./a.out -e image.bmp secret.txt [stegno.bmp]\n");
+        printf("Usage : For Encoding : ./a.out -e image.bmp secret_file [stegno.bmp]\n");
         printf("      : For Message  : ./a.out -e image.bmp -m \"message\" [stegno.bmp]\n");
-        printf("      : For Decoding : ./a.out -d stegno.bmp [decode.txt]\n");
-        printf("      : Note: Accepts any image type (bmp, png, jpg, etc.)\n");
+        printf("      : For Decoding : ./a.out -d stegno.bmp [output_file]\n");
+        printf("      : Secret file types: PDF, DOC, MP3, JPG, PNG, MP4, ZIP, PEM, etc.\n");
+        printf("      : Carrier image types: BMP (best), PNG, JPG, GIF, TIFF, etc.\n");
     }
     return 0;
 }

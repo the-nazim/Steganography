@@ -6,11 +6,65 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <sstream>
+#include <iomanip>
+#include <sys/stat.h>
 
 #include "stegano_wrapper.h"
 #include <cstdlib>
 
 using namespace ftxui;
+
+// Helper: format bytes to human-readable string
+std::string format_bytes(long bytes) {
+    if (bytes < 1024) return std::to_string(bytes) + " B";
+    if (bytes < 1024 * 1024) {
+        std::ostringstream ss;
+        ss << std::fixed << std::setprecision(1) << (bytes / 1024.0) << " KB";
+        return ss.str();
+    }
+    std::ostringstream ss;
+    ss << std::fixed << std::setprecision(1) << (bytes / (1024.0 * 1024.0)) << " MB";
+    return ss.str();
+}
+
+// Helper: get file size from path
+long get_file_size_from_path(const std::string &path) {
+    struct stat st;
+    if (stat(path.c_str(), &st) == 0) return st.st_size;
+    return -1;
+}
+
+// Helper: file type description from extension
+std::string file_type_description(const std::string &ext) {
+    if (ext == ".pdf") return "PDF Document";
+    if (ext == ".doc" || ext == ".docx") return "Word Document";
+    if (ext == ".xls" || ext == ".xlsx") return "Spreadsheet";
+    if (ext == ".mp3") return "Audio (MP3)";
+    if (ext == ".wav") return "Audio (WAV)";
+    if (ext == ".flac") return "Audio (FLAC)";
+    if (ext == ".aac") return "Audio (AAC)";
+    if (ext == ".ogg") return "Audio (OGG)";
+    if (ext == ".jpg" || ext == ".jpeg") return "Image (JPEG)";
+    if (ext == ".png") return "Image (PNG)";
+    if (ext == ".gif") return "Image (GIF)";
+    if (ext == ".bmp") return "Image (BMP)";
+    if (ext == ".svg") return "Image (SVG)";
+    if (ext == ".mp4") return "Video (MP4)";
+    if (ext == ".avi") return "Video (AVI)";
+    if (ext == ".mkv") return "Video (MKV)";
+    if (ext == ".zip") return "Archive (ZIP)";
+    if (ext == ".tar" || ext == ".gz") return "Archive (TAR/GZ)";
+    if (ext == ".pem" || ext == ".key") return "Crypto Key";
+    if (ext == ".p12" || ext == ".pfx") return "Certificate Bundle";
+    if (ext == ".txt") return "Text File";
+    if (ext == ".json") return "JSON Data";
+    if (ext == ".xml") return "XML Data";
+    if (ext == ".csv") return "CSV Data";
+    if (ext == ".py" || ext == ".js" || ext == ".c" || ext == ".cpp") return "Source Code";
+    if (ext == "") return "Unknown";
+    return "File" + ext;
+}
 
 // ============================================
 // Main TUI Application
@@ -32,6 +86,9 @@ int main()
     std::string output_file = "";
     std::string stego_image = "";
     std::string decode_output = "";
+    std::string info_stego_image = "";
+    std::string info_result = "";
+    bool info_found = false;
 
     // ============================================
     // Components for each page
@@ -39,9 +96,10 @@ int main()
 
     // Main menu
     auto main_menu = Container::Vertical({
-        Button(" [1] Encode  - Hide data in an image ", [&]() { current_page = 1; show_status = false; }),
-        Button(" [2] Decode  - Extract hidden data ", [&]() { current_page = 4; show_status = false; }),
-        Button(" [3] Help    - Usage guide ", [&]() { current_page = 7; show_status = false; }),
+        Button(" [1] Encode    - Hide data in an image ", [&]() { current_page = 1; show_status = false; }),
+        Button(" [2] Decode    - Extract hidden data ", [&]() { current_page = 4; show_status = false; }),
+        Button(" [3] File Info - Inspect stego image ", [&]() { current_page = 8; show_status = false; info_result = ""; }),
+        Button(" [4] Help      - Usage guide ", [&]() { current_page = 7; show_status = false; }),
         Button(" [0] Exit ", [&]() { screen.Exit(); }),
     });
 
@@ -155,6 +213,42 @@ int main()
         Container::Horizontal({dec_term_btn, dec_term_back}),
     });
 
+    // File Info
+    auto info_stego_input = Input(&info_stego_image, "Stego image path");
+    auto info_btn = Button(" Inspect ", [&]() {
+        if (info_stego_image.empty()) {
+            status_message = "Please enter a stego image path";
+            is_error = true;
+            show_status = true;
+            return;
+        }
+        SteganoFileInfo finfo;
+        int ret = stegano_get_info(info_stego_image.c_str(), &finfo);
+        if (ret == 0 && finfo.has_hidden_data) {
+            std::string ext = finfo.extension;
+            std::string type_desc = file_type_description(ext);
+            std::ostringstream ss;
+            ss << "Hidden file: " << type_desc << "\n"
+               << "Extension: " << ext << "\n"
+               << "File size: " << format_bytes(finfo.file_size);
+            info_result = ss.str();
+            info_found = true;
+            status_message = "Hidden data detected in " + info_stego_image;
+            is_error = false;
+        } else {
+            info_result = "No hidden data found.";
+            info_found = false;
+            status_message = "No hidden data found in " + info_stego_image;
+            is_error = true;
+        }
+        show_status = true;
+    });
+    auto info_back = Button(" Back ", [&]() { current_page = 0; show_status = false; });
+    auto info_container = Container::Vertical({
+        info_stego_input,
+        Container::Horizontal({info_btn, info_back}),
+    });
+
     // Help
     auto help_back = Button(" Back ", [&]() { current_page = 0; show_status = false; });
 
@@ -170,6 +264,7 @@ int main()
         dec_file_container,
         dec_term_container,
         help_back,
+        info_container,
     }, &current_page);
 
     // ============================================
@@ -190,10 +285,11 @@ int main()
             content.push_back(text(""));
             content.push_back(text("  Main Menu:") | bold | color(Color::White));
             content.push_back(text(""));
-            content.push_back(hbox({text("  [1] "), text("Encode  ") | bold, text(" - Hide data in an image") | dim}));
-            content.push_back(hbox({text("  [2] "), text("Decode  ") | bold, text(" - Extract hidden data") | dim}));
-            content.push_back(hbox({text("  [3] "), text("Help    ") | bold, text(" - Usage guide") | dim}));
-            content.push_back(hbox({text("  [0] "), text("Exit    ") | bold}));
+            content.push_back(hbox({text("  [1] "), text("Encode    ") | bold, text(" - Hide data in an image") | dim}));
+            content.push_back(hbox({text("  [2] "), text("Decode    ") | bold, text(" - Extract hidden data") | dim}));
+            content.push_back(hbox({text("  [3] "), text("File Info ") | bold, text(" - Inspect stego image") | dim}));
+            content.push_back(hbox({text("  [4] "), text("Help      ") | bold, text(" - Usage guide") | dim}));
+            content.push_back(hbox({text("  [0] "), text("Exit      ") | bold}));
             content.push_back(text(""));
             content.push_back(text("  Select an option:") | color(Color::Yellow));
             content.push_back(text(""));
@@ -211,8 +307,16 @@ int main()
         else if (current_page == 2) {
             content.push_back(text("  ENCODE FILE") | bold | color(Color::Cyan));
             content.push_back(text(""));
-            content.push_back(text("  Hide a secret file inside an image.") | dim);
-            content.push_back(text("  Supports any image type (BMP, PNG, JPG, etc.)") | dim);
+            content.push_back(text("  Hide any file inside an image using LSB steganography.") | dim);
+            content.push_back(text(""));
+            content.push_back(text("  Supported secret file types:") | bold | color(Color::White));
+            content.push_back(text("  Documents:  PDF, DOC, DOCX, XLS, XLSX, TXT, CSV, JSON, XML") | dim);
+            content.push_back(text("  Audio:      MP3, WAV, FLAC, AAC, OGG") | dim);
+            content.push_back(text("  Images:     JPG, PNG, GIF, BMP, SVG, TIFF") | dim);
+            content.push_back(text("  Video:      MP4, AVI, MKV") | dim);
+            content.push_back(text("  Archives:   ZIP, TAR, GZ") | dim);
+            content.push_back(text("  Crypto:     PEM, KEY, P12, PFX") | dim);
+            content.push_back(text("  Source:     PY, JS, C, CPP, and any other file") | dim);
             content.push_back(text(""));
             content.push_back(enc_file_container->Render() | border | color(Color::White));
         }
@@ -267,14 +371,42 @@ int main()
             content.push_back(hbox({text("  Decode to file:"), text("./steganography -d <stego> [out.txt]") | color(Color::Green)}));
             content.push_back(hbox({text("  Decode to term:"), text("./steganography -d <stego>") | color(Color::Green)}));
             content.push_back(text(""));
-            content.push_back(text("  Supported Image Types:") | bold | color(Color::White));
-            content.push_back(text("  BMP (best), PNG, JPG, GIF, TIFF, and any file"));
+            content.push_back(text("  Carrier Image Types (best to worst):") | bold | color(Color::White));
+            content.push_back(text("  BMP (best) > PNG > JPG > GIF > TIFF > any file") | dim);
+            content.push_back(text(""));
+            content.push_back(text("  Secret File Types:") | bold | color(Color::White));
+            content.push_back(text("  Any file can be hidden: documents, audio, images, video,") | dim);
+            content.push_back(text("  archives, crypto keys, source code, and more."));
             content.push_back(text(""));
             content.push_back(text("  How It Works:") | bold | color(Color::White));
             content.push_back(text("  Hides data in LSB of image bytes. Changes are invisible.") | dim);
             content.push_back(text("  Overflow data is appended for BMP (image still displays).") | dim);
             content.push_back(text(""));
             content.push_back(help_back->Render());
+        }
+        // ── Page: File Info ──
+        else if (current_page == 8) {
+            content.push_back(text("  FILE INFO - Inspect Stego Image") | bold | color(Color::Cyan));
+            content.push_back(text(""));
+            content.push_back(text("  Check if an image contains hidden data and view its details.") | dim);
+            content.push_back(text(""));
+            content.push_back(info_container->Render() | border | color(Color::White));
+
+            if (!info_result.empty()) {
+                content.push_back(text(""));
+                if (info_found) {
+                    content.push_back(text("  Hidden Data Details:") | bold | color(Color::Green));
+                    content.push_back(text("  +--------------------------------------+") | color(Color::Cyan));
+                    std::istringstream iss(info_result);
+                    std::string line;
+                    while (std::getline(iss, line)) {
+                        content.push_back(hbox({text("  | ") | color(Color::Cyan), text(line) | color(Color::Green)}));
+                    }
+                    content.push_back(text("  +--------------------------------------+") | color(Color::Cyan));
+                } else {
+                    content.push_back(text("  No hidden data found.") | color(Color::Red));
+                }
+            }
         }
 
         // Status message at bottom

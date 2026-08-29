@@ -199,10 +199,17 @@ encode_menu() {
 
 # Encode file
 encode_file() {
-    print_section "📄 ENCODE FILE"
+    print_section "📄 ENCODE FILE - Hide Any File"
 
-    echo -e "  ${DIM}Enter the source image and secret file paths.${NC}"
-    echo -e "  ${DIM}Supports any image type (BMP, PNG, JPG, etc.)${NC}\n"
+    echo -e "  ${DIM}Hide any file inside an image using LSB steganography.${NC}\n"
+    echo -e "  ${WHITE}Supported secret file types:${NC}"
+    echo -e "  ${GREEN}Documents:${NC} PDF, DOC, DOCX, XLS, XLSX, TXT, CSV, JSON, XML"
+    echo -e "  ${GREEN}Audio:${NC}     MP3, WAV, FLAC, AAC, OGG"
+    echo -e "  ${GREEN}Images:${NC}    JPG, PNG, GIF, BMP, SVG, TIFF"
+    echo -e "  ${GREEN}Video:${NC}     MP4, AVI, MKV"
+    echo -e "  ${GREEN}Archives:${NC}  ZIP, TAR, GZ"
+    echo -e "  ${GREEN}Crypto:${NC}    PEM, KEY, P12, PFX"
+    echo -e "  ${GREEN}Source:${NC}    PY, JS, C, CPP, and any other file\n"
 
     # Get source image
     echo -ne "${YELLOW}  → Source image path: ${NC}"
@@ -231,9 +238,22 @@ encode_file() {
         output_image="encode.bmp"
     fi
 
+    # Show file info
+    local file_ext="${secret_file##*.}"
+    local file_size=$(stat --printf="%s" "$secret_file" 2>/dev/null || stat -f%z "$secret_file" 2>/dev/null || echo "unknown")
+    local file_size_hr="$file_size B"
+    if [ "$file_size" != "unknown" ]; then
+        if [ "$file_size" -gt 1048576 ]; then
+            file_size_hr="$(echo "scale=1; $file_size/1048576" | bc 2>/dev/null || echo "$file_size") MB"
+        elif [ "$file_size" -gt 1024 ]; then
+            file_size_hr="$(echo "scale=1; $file_size/1024" | bc 2>/dev/null || echo "$file_size") KB"
+        fi
+    fi
+
     echo -e "\n${WHITE}  Summary:${NC}"
     echo -e "  ${GRAY}Source:${NC}  $src_image"
     echo -e "  ${GRAY}Secret:${NC}  $secret_file"
+    echo -e "  ${GRAY}Type:${NC}    .$file_ext ($file_size_hr)"
     echo -e "  ${GRAY}Output:${NC}  $output_image"
 
     echo -ne "\n${YELLOW}  → Proceed? (y/N): ${NC}"
@@ -245,7 +265,7 @@ encode_file() {
         return
     fi
 
-    run_with_progress "Encoding file into image" "$BINARY" -e "$src_image" "$secret_file" "$output_image"
+    run_with_progress "Encoding .$file_ext file ($file_size_hr) into image" "$BINARY" -e "$src_image" "$secret_file" "$output_image"
 
     echo -ne "\n${YELLOW}  → Press Enter to continue...${NC}"
     read -r
@@ -257,7 +277,7 @@ encode_message() {
     print_section "💬 ENCODE MESSAGE"
 
     echo -e "  ${DIM}Enter the source image and your secret message.${NC}"
-    echo -e "  ${DIM}Supports any image type (BMP, PNG, JPG, etc.)${NC}\n"
+    echo -e "  ${DIM}Supports any image type (BMP, PNG, JPG, etc.) as carrier.${NC}\n"
 
     # Get source image
     echo -ne "${YELLOW}  → Source image path: ${NC}"
@@ -441,9 +461,18 @@ help_menu() {
     echo -e "  ${CYAN}Show help:${NC}"
     echo -e "    ./steganography -h | --help\n"
 
-    echo -e "${WHITE}  Supported Image Types:${NC}\n"
-    echo -e "  ${GREEN}✓${NC} BMP (best support - image displays normally even with overflow)"
+    echo -e "${WHITE}  Carrier Image Types (best to worst):${NC}\n"
+    echo -e "  ${GREEN}✓${NC} BMP (best - image displays normally even with overflow)"
     echo -e "  ${GREEN}✓${NC} PNG, JPG, GIF, TIFF (treated as raw bytes)\n"
+
+    echo -e "${WHITE}  Secret File Types:${NC}\n"
+    echo -e "  ${GREEN}Documents:${NC} PDF, DOC, DOCX, XLS, XLSX, TXT, CSV, JSON, XML"
+    echo -e "  ${GREEN}Audio:${NC}     MP3, WAV, FLAC, AAC, OGG"
+    echo -e "  ${GREEN}Images:${NC}    JPG, PNG, GIF, BMP, SVG, TIFF"
+    echo -e "  ${GREEN}Video:${NC}     MP4, AVI, MKV"
+    echo -e "  ${GREEN}Archives:${NC}  ZIP, TAR, GZ"
+    echo -e "  ${GREEN}Crypto:${NC}    PEM, KEY, P12, PFX"
+    echo -e "  ${GREEN}Source:${NC}    PY, JS, C, CPP, and any other file\n"
 
     echo -e "${WHITE}  How It Works:${NC}\n"
     echo -e "  ${DIM}The tool hides data in the least significant bits (LSB) of image${NC}"
@@ -452,14 +481,64 @@ help_menu() {
     echo -e "  ${DIM}after the image content (works seamlessly for BMP files).${NC}\n"
 
     echo -e "${WHITE}  Examples:${NC}\n"
-    echo -e "  ${CYAN}# Hide a password file${NC}"
-    echo -e "  ./steganography -e photo.bmp passwords.txt hidden.bmp\n"
+    echo -e "  ${CYAN}# Hide a PDF document${NC}"
+    echo -e "  ./steganography -e photo.bmp report.pdf hidden.bmp\n"
+    echo -e "  ${CYAN}# Hide an audio file${NC}"
+    echo -e "  ./steganography -e photo.bmp music.mp3 hidden.bmp\n"
+    echo -e "  ${CYAN}# Hide a crypto key${NC}"
+    echo -e "  ./steganography -e photo.bmp private.pem hidden.bmp\n"
     echo -e "  ${CYAN}# Hide a quick message${NC}"
     echo -e "  ./steganography -e photo.bmp -m \"Meet me at 5\" hidden.bmp\n"
     echo -e "  ${CYAN}# Extract to file${NC}"
-    echo -e "  ./steganography -d hidden.bmp recovered.txt\n"
+    echo -e "  ./steganography -d hidden.bmp recovered.pdf\n"
     echo -e "  ${CYAN}# Print message directly${NC}"
     echo -e "  ./steganography -d hidden.bmp\n"
+
+    echo -ne "\n${YELLOW}  → Press Enter to continue...${NC}"
+    read -r
+}
+
+# =====================
+# FILE INFO MENU
+# =====================
+file_info_menu() {
+    print_section "🔍 FILE INFO - Inspect Stego Image"
+
+    echo -e "  ${DIM}Check if an image contains hidden data and view its details.${NC}\n"
+
+    # Get stego image
+    echo -ne "${YELLOW}  → Stego image path: ${NC}"
+    read -r stego_image
+    if [ ! -f "$stego_image" ]; then
+        print_error "File not found: $stego_image"
+        sleep 1
+        return
+    fi
+
+    # Show image file size
+    local img_size=$(stat --printf="%s" "$stego_image" 2>/dev/null || stat -f%z "$stego_image" 2>/dev/null || echo "unknown")
+    echo -e "  ${GRAY}Image file size: $img_size bytes${NC}"
+
+    # Run decode to extract metadata (it will fail gracefully if no hidden data)
+    echo -e "\n${BLUE}  ⏳ Scanning for hidden data...${NC}\n"
+    output=$("$BINARY" -d "$stego_image" 2>&1)
+    exit_code=$?
+
+    if echo "$output" | grep -q "Decoded magic string successfully"; then
+        echo -e "  ${GREEN}✓ Hidden data detected!${NC}\n"
+        echo -e "${WHITE}  Metadata:${NC}"
+        echo -e "${CYAN}  ┌────────────────────────────────────────────┐${NC}"
+        while IFS= read -r line; do
+            if [[ "$line" == *"extn"* ]] || [[ "$line" == *"size"* ]] || [[ "$line" == *"Extension"* ]] || [[ "$line" == *"ext"* ]]; then
+                echo -e "${CYAN}  │${NC} ${GREEN}$line${NC}"
+            elif [[ "$line" == *"Message:"* ]]; then
+                echo -e "${CYAN}  │${NC} ${MAGENTA}$line${NC}"
+            fi
+        done <<< "$output"
+        echo -e "${CYAN}  └────────────────────────────────────────────┘${NC}"
+    else
+        echo -e "  ${RED}✗ No hidden data found in this image.${NC}"
+    fi
 
     echo -ne "\n${YELLOW}  → Press Enter to continue...${NC}"
     read -r
@@ -473,27 +552,29 @@ main_menu() {
         print_banner
 
         echo -e "  ${WHITE}Main Menu:${NC}\n"
-        echo -e "  ${CYAN}[1]${NC} 🔒 ${BOLD}Encode${NC}  - Hide data in an image"
-        echo -e "  ${CYAN}[2]${NC} 🔓 ${BOLD}Decode${NC}  - Extract hidden data"
-        echo -e "  ${CYAN}[3]${NC} 📖 ${BOLD}Help${NC}    - Usage guide & examples"
+        echo -e "  ${CYAN}[1]${NC} 🔒 ${BOLD}Encode${NC}    - Hide data in an image"
+        echo -e "  ${CYAN}[2]${NC} 🔓 ${BOLD}Decode${NC}    - Extract hidden data"
+        echo -e "  ${CYAN}[3]${NC} 🔍 ${BOLD}File Info${NC} - Inspect stego image"
+        echo -e "  ${CYAN}[4]${NC} 📖 ${BOLD}Help${NC}      - Usage guide & examples"
         echo -e "  ${CYAN}[0]${NC} 🚪 ${BOLD}Exit${NC}"
         echo ""
         echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 
-        echo -ne "\n${YELLOW}  → Select option (0-3): ${NC}"
+        echo -ne "\n${YELLOW}  → Select option (0-4): ${NC}"
         read -r choice
 
         case $choice in
             1) encode_menu ;;
             2) decode_menu ;;
-            3) help_menu ;;
+            3) file_info_menu ;;
+            4) help_menu ;;
             0)
                 print_banner
                 echo -e "  ${GREEN}Goodbye! Stay secure. 🔐${NC}\n"
                 exit 0
                 ;;
             *)
-                print_error "Invalid option. Please select 0-3."
+                print_error "Invalid option. Please select 0-4."
                 sleep 1
                 ;;
         esac
